@@ -64,10 +64,6 @@ https://docs.cursor.com/get-started/installation
 ### 4. Clone Workshop Repository
 
 ```bash
-# Clone the workshop repository
-git clone https://github.com/matekapeter/agentic-craft.git
-cd agentic-craft
-
 # Verify repository contents
 ls -la
 ```
@@ -75,13 +71,6 @@ ls -la
 **Expected repository structure:**
 ```
 agentic-craft/
-├── .devcontainer/
-│   ├── devcontainer.json
-│   └── Dockerfile
-├── .cursor/
-│   └── rules/
-│       ├── backend.mdc
-│       └── frontend.mdc
 ├── session 1/
 │   ├── backend/
 │   │   ├── src/
@@ -103,7 +92,7 @@ agentic-craft/
 
 ```bash
 # Navigate to project directory
-cd agentic-craft
+cd session_1
 
 # Build and start all services
 docker compose up --build -d
@@ -203,21 +192,6 @@ sudo systemctl stop <service-name>
 # For database: "5433:5432" instead of "5432:5432"
 ```
 
-**Dev Container Won't Start:**
-```bash
-# Rebuild dev container
-docker compose down
-docker system prune -f
-docker compose up --build
-```
-
-**Cursor Can't Connect to Container:**
-1. Ensure Docker is running: `docker ps`
-2. Check if `.devcontainer/devcontainer.json` exists in project root
-3. Restart Cursor IDE
-4. Try "Dev Containers: Rebuild Container" from Command Palette
-5. If devcontainer files are missing, they should be created automatically or you can create them manually with the structure shown in the repository
-
 ### Getting Help
 
 **Before the workshop:**
@@ -235,7 +209,7 @@ docker compose up --build
 Mark each item as completed:
 
 - [ ] Docker and Docker Compose installed and working
-- [ ] Cursor IDE installed with Dev Containers extension
+- [ ] Cursor IDE installed
 - [ ] Workshop repository cloned successfully
 - [ ] All containers start without errors (`docker compose ps` shows all "Up")
 - [ ] Backend health check returns success (http://localhost:8080/api/health)
@@ -249,7 +223,6 @@ Mark each item as completed:
 Once your setup is verified:
 1. **Explore the codebase** - Familiarize yourself with the project structure
 2. **Try Cursor features** - Experiment with AI completions and chat
-3. **Read the .cursor/rules files** - Understand the coding standards we'll use
 
 **See you in Session 1! 🚀**
 
