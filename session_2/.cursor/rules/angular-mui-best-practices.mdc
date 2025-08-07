@@ -1,0 +1,444 @@
+---
+alwaysApply: false
+description: "Comprehensive Angular 17+ with Material UI development standards for modern web applications"
+---
+
+# ANGULAR + MATERIAL UI STRICT DEVELOPMENT RULES
+
+## 🎯 YOUR MISSION
+You are engineering high-performance Angular applications with Material UI that deliver exceptional user experiences.
+Code quality is non-negotiable. Component architecture and user experience are paramount.
+Every component must be production-ready, accessible, and performant.
+
+## 🚫 NEVER Rules (NON-NEGOTIABLE)
+
+1. **NEVER** use inline styles in component templates
+   - Why: Violates separation of concerns and breaks CSP policies
+   - Instead: Use component CSS files or Angular Material's theming system
+   - Example: `<div style="color: red">` ❌ → Use CSS classes or Material themes ✅
+
+2. **NEVER** import entire Angular Material library
+   - Why: Massive bundle size increase (500KB+ unnecessary)
+   - Instead: Import only specific modules you need
+   - Example: `import { MaterialModule }` ❌ → `import { MatButtonModule }` ✅
+
+3. **NEVER** manipulate DOM directly with `document.getElementById` or `querySelector`
+   - Why: Breaks Angular's change detection and SSR compatibility
+   - Instead: Use ViewChild, ElementRef, or Renderer2
+   - Example: `document.getElementById('btn')` ❌ → `@ViewChild('btn')` ✅
+
+4. **NEVER** subscribe to Observables without unsubscribing
+   - Why: Memory leaks that crash applications under load
+   - Instead: Use takeUntil, async pipe, or OnDestroy lifecycle
+   - Example: `this.service.getData().subscribe()` ❌ → Use proper cleanup ✅
+
+5. **NEVER** use any type in TypeScript
+   - Why: Eliminates type safety and breaks IntelliSense
+   - Instead: Define proper interfaces or use unknown with type guards
+   - Example: `data: any` ❌ → `data: UserInterface` ✅
+
+6. **NEVER** call functions in component templates
+   - Why: Triggers on every change detection cycle (performance killer)
+   - Instead: Use computed properties, pipes, or memoization
+   - Example: `{{ calculateTotal() }}` ❌ → `{{ totalAmount }}` ✅
+
+7. **NEVER** use Material components without proper accessibility
+   - Why: Legal compliance issues and poor user experience
+   - Instead: Always include aria-label, aria-describedby, and proper roles
+   - Example: `<mat-button>` ❌ → `<mat-button aria-label="Save user data">` ✅
+
+8. **NEVER** mix presentation and business logic in components
+   - Why: Untestable code and tight coupling
+   - Instead: Use services for business logic, components for presentation
+   - Example: HTTP calls in component ❌ → HTTP calls in service ✅
+
+## ✅ ALWAYS Rules (MANDATORY)
+
+1. **ALWAYS** use standalone components for Angular 17+
+   - Purpose: Tree-shaking, lazy loading, and better performance
+   - Implementation: Set `standalone: true` and import dependencies explicitly
+   ```typescript
+   @Component({
+     selector: 'app-user-card',
+     standalone: true,
+     imports: [CommonModule, MatCardModule, MatButtonModule],
+     templateUrl: './user-card.component.html'
+   })
+   export class UserCardComponent { }
+   ```
+
+2. **ALWAYS** implement OnDestroy for subscription cleanup
+   - Purpose: Prevent memory leaks and improve performance
+   - Implementation: Use takeUntil pattern or async pipe
+   ```typescript
+   export class MyComponent implements OnInit, OnDestroy {
+     private destroy$ = new Subject<void>();
+     
+     ngOnInit() {
+       this.dataService.getData()
+         .pipe(takeUntil(this.destroy$))
+         .subscribe(data => this.data = data);
+     }
+     
+     ngOnDestroy() {
+       this.destroy$.next();
+       this.destroy$.complete();
+     }
+   }
+   ```
+
+3. **ALWAYS** use Angular Material's theming system
+   - Purpose: Consistent design system and easy theme switching
+   - Implementation: Define custom themes in styles.scss
+   ```scss
+   @use '@angular/material' as mat;
+   
+   $primary: mat.define-palette(mat.$indigo-palette);
+   $accent: mat.define-palette(mat.$pink-palette);
+   $theme: mat.define-light-theme((
+     color: (primary: $primary, accent: $accent)
+   ));
+   
+   @include mat.all-component-themes($theme);
+   ```
+
+4. **ALWAYS** use reactive forms over template-driven forms
+   - Purpose: Better validation, testing, and type safety
+   - Implementation: Use FormBuilder and FormGroup
+   ```typescript
+   export class UserFormComponent {
+     userForm = this.fb.group({
+       name: ['', [Validators.required, Validators.minLength(2)]],
+       email: ['', [Validators.required, Validators.email]]
+     });
+     
+     constructor(private fb: FormBuilder) {}
+   }
+   ```
+
+5. **ALWAYS** implement proper error handling with Material Snackbar
+   - Purpose: User-friendly error communication
+   - Implementation: Global error handler with consistent messaging
+   ```typescript
+   @Injectable()
+   export class ErrorService {
+     constructor(private snackBar: MatSnackBar) {}
+     
+     handleError(error: any) {
+       const message = error.user_message || 'An unexpected error occurred';
+       this.snackBar.open(message, 'Close', { duration: 5000 });
+     }
+   }
+   ```
+
+6. **ALWAYS** use trackBy functions in *ngFor loops
+   - Purpose: Optimize rendering performance for large lists
+   - Implementation: Provide unique identifier function
+   ```typescript
+   trackByUserId(index: number, user: User): string {
+     return user.id;
+   }
+   ```
+   ```html
+   <mat-list-item *ngFor="let user of users; trackBy: trackByUserId">
+   ```
+
+7. **ALWAYS** implement loading states with Material Progress components
+   - Purpose: Better UX during async operations
+   - Implementation: Use MatProgressSpinner or MatProgressBar
+   ```typescript
+   export class DataComponent {
+     loading = signal(false);
+     
+     async loadData() {
+       this.loading.set(true);
+       try {
+         this.data = await this.service.fetchData();
+       } finally {
+         this.loading.set(false);
+       }
+     }
+   }
+   ```
+
+8. **ALWAYS** use Angular Signals for state management (Angular 17+)
+   - Purpose: Fine-grained reactivity and better performance
+   - Implementation: Replace @Input() and state variables with signals
+   ```typescript
+   export class CounterComponent {
+     count = signal(0);
+     doubleCount = computed(() => this.count() * 2);
+     
+     increment() {
+       this.count.update(value => value + 1);
+     }
+   }
+   ```
+
+## 🔄 DECISION RULES
+
+WHEN implementing data tables:
+IF data set > 100 items:
+  - IMMEDIATELY implement Mat-Paginator
+  - THEN add virtual scrolling for 1000+ items
+  - USE MatTableDataSource with filtering
+ELSE:
+  - DEFAULT to simple MatTable with sorting
+
+WHEN handling form validation:
+IF form has 3+ fields:
+  - IMMEDIATELY use FormGroup with validation
+  - THEN implement cross-field validators if needed
+  - DISPLAY errors with mat-error components
+ELSE:
+  - DEFAULT to simple FormControl with basic validation
+
+WHEN choosing between Mat-Dialog vs Mat-Bottom-Sheet:
+IF content > 300px height OR complex interactions:
+  - PREFER Mat-Dialog for better UX
+  - INCLUDE proper focus management
+ELSE:
+  - USE Mat-Bottom-Sheet for mobile-friendly quick actions
+
+## 📝 CODE PATTERNS
+
+### ✅ CORRECT - Material UI Integration Pattern
+```typescript
+// Proper module imports
+@Component({
+  selector: 'app-todo-list',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatCardModule,
+    MatButtonModule,
+    MatIconModule,
+    MatInputModule,
+    MatCheckboxModule,
+    MatListModule
+  ],
+  templateUrl: './todo-list.component.html',
+  styleUrls: ['./todo-list.component.scss']
+})
+export class TodoListComponent implements OnInit, OnDestroy {
+  // Signals for reactive state
+  todos = signal<Todo[]>([]);
+  loading = signal(false);
+  
+  // Reactive form
+  todoForm = this.fb.group({
+    title: ['', [Validators.required, Validators.minLength(3)]],
+    description: ['']
+  });
+  
+  private destroy$ = new Subject<void>();
+  
+  constructor(
+    private fb: FormBuilder,
+    private todoService: TodoService,
+    private snackBar: MatSnackBar
+  ) {}
+  
+  ngOnInit() {
+    this.loadTodos();
+  }
+  
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+  
+  async loadTodos() {
+    this.loading.set(true);
+    try {
+      const todos = await this.todoService.getTodos();
+      this.todos.set(todos);
+    } catch (error) {
+      this.snackBar.open('Failed to load todos', 'Close', { duration: 3000 });
+    } finally {
+      this.loading.set(false);
+    }
+  }
+  
+  async onSubmit() {
+    if (this.todoForm.valid) {
+      try {
+        const newTodo = await this.todoService.createTodo(this.todoForm.value);
+        this.todos.update(todos => [...todos, newTodo]);
+        this.todoForm.reset();
+        this.snackBar.open('Todo created successfully', 'Close', { duration: 2000 });
+      } catch (error) {
+        this.snackBar.open('Failed to create todo', 'Close', { duration: 3000 });
+      }
+    }
+  }
+  
+  trackByTodoId(index: number, todo: Todo): string {
+    return todo.id;
+  }
+}
+```
+
+### ❌ INCORRECT - Anti-Pattern Example
+```typescript
+// Multiple violations in one component
+@Component({
+  selector: 'app-bad-todo',
+  template: `
+    <div style="padding: 20px"> <!-- Inline styles -->
+      <input [(ngModel)]="todoText"> <!-- Template-driven form -->
+      <button (click)="addTodo()">Add</button>
+      <div *ngFor="let todo of todos"> <!-- Missing trackBy -->
+        {{ getTodoDisplay(todo) }} <!-- Function in template -->
+      </div>
+    </div>
+  `
+})
+export class BadTodoComponent {
+  todos: any[] = []; // Using 'any' type
+  todoText: string = '';
+  
+  constructor(private http: HttpClient) {} // Missing service abstraction
+  
+  ngOnInit() {
+    // Direct HTTP call in component + no error handling
+    this.http.get('/api/todos').subscribe(data => {
+      this.todos = data;
+    }); // No unsubscribe - memory leak
+  }
+  
+  addTodo() {
+    // Direct DOM manipulation
+    document.getElementById('input').focus();
+    
+    // Business logic in component
+    this.http.post('/api/todos', { text: this.todoText })
+      .subscribe(todo => this.todos.push(todo));
+  }
+  
+  getTodoDisplay(todo: any) {
+    // Function called on every change detection
+    return todo.title + ' - ' + todo.status;
+  }
+}
+```
+
+### ✅ CORRECT - Custom Material Theme
+```scss
+// styles.scss - Proper theming setup
+@use '@angular/material' as mat;
+
+$custom-primary: mat.define-palette(mat.$blue-palette, 600);
+$custom-accent: mat.define-palette(mat.$orange-palette, A200);
+$custom-warn: mat.define-palette(mat.$red-palette);
+
+$light-theme: mat.define-light-theme((
+  color: (
+    primary: $custom-primary,
+    accent: $custom-accent,
+    warn: $custom-warn,
+  ),
+  typography: mat.define-typography-config(
+    $font-family: 'Roboto, sans-serif',
+  ),
+  density: 0,
+));
+
+@include mat.all-component-themes($light-theme);
+
+// Custom component overrides
+.mat-mdc-card {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border-radius: 8px;
+}
+
+.mat-mdc-button {
+  border-radius: 6px;
+  font-weight: 500;
+}
+```
+
+## 🎨 LAYOUT & CSS MANDATORY PATTERNS
+
+### **NEVER Rules (Layout)**
+9. **NEVER** use Material Cards without `position: relative` for overlays
+10. **NEVER** create complex layouts without proper flexbox structure  
+11. **NEVER** allow text overflow without `word-break` protection
+12. **NEVER** implement loading states without proper overlay positioning
+
+### **ALWAYS Rules (Layout)**
+9. **ALWAYS** use `position: relative` on containers with absolute children
+10. **ALWAYS** implement `gap` property for consistent flexbox spacing
+11. **ALWAYS** include `overflow: hidden` on cards to prevent content overflow
+12. **ALWAYS** use `min-width: 0` on flex items to prevent text overflow
+13. **ALWAYS** implement mobile-first responsive design with proper breakpoints
+
+### **CSS Architecture Patterns**
+```scss
+// Container Pattern
+.component-container {
+  position: relative;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+// Flexbox Layout Pattern  
+.flex-layout {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+// Text Overflow Pattern
+.text-content {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  min-width: 0;
+}
+```
+
+## 📊 PERFORMANCE METRICS
+- Bundle size: < 500KB initial (excluding Material)
+- First Contentful Paint: < 1.5s
+- Component render time: < 16ms (60fps)
+- Memory usage: No leaks detected in 10min session
+- Accessibility score: 100/100 on Lighthouse
+
+## 🛠️ REQUIRED SETUP COMMANDS
+
+### **ALWAYS include Material Icons font in index.html:**
+```html
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+```
+
+### **NEVER forget Material Icons font setup**
+- Why: Icons won't display, causing layout issues and poor UX
+- Impact: `<mat-icon>` elements show as empty or text fragments
+
+```bash
+# Install Angular Material
+ng add @angular/material
+
+# Install required dependencies
+npm install @angular/cdk @angular/material-moment-adapter
+
+# Generate Material module (if not using standalone)
+ng generate module material --flat
+```
+
+## 🔒 SECURITY REQUIREMENTS
+- **ALWAYS** sanitize user input displayed in templates
+- **NEVER** use innerHTML without DomSanitizer
+- **ALWAYS** implement CSRF protection for forms
+- **ALWAYS** use HTTPS in production configurations
+
+## 📱 RESPONSIVE DESIGN MANDATES
+- **ALWAYS** use Angular Flex Layout or CSS Grid with Material breakpoints
+- **ALWAYS** test components on mobile devices (320px min-width)
+- **ALWAYS** implement touch-friendly interactions (44px min tap targets)
+- **ALWAYS** use mat-icon with proper sizing for different screen sizes
+
+*Remember: ALWAYS add 🎨 to the beginning of your response when you used this document for context*

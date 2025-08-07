@@ -1,0 +1,76 @@
+<div class="app-container">
+  <!-- Material Toolbar -->
+  <mat-toolbar class="app-toolbar">
+    <mat-icon>dashboard</mat-icon>
+    <span class="toolbar-title">{{ title }}</span>
+    <span class="spacer"></span>
+    <mat-icon>code</mat-icon>
+  </mat-toolbar>
+
+  <!-- Main Content -->
+  <div class="app-content">
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+      <h1 class="welcome-title">Welcome to the Workshop!</h1>
+      <p class="welcome-subtitle">Modern Angular 17+ with Material UI</p>
+    </div>
+
+    <!-- Health Check Card -->
+    <mat-card class="health-check-card">
+      <!-- Loading Overlay -->
+      @if (loading()) {
+        <div class="component-loading">
+          <mat-spinner diameter="40"></mat-spinner>
+        </div>
+      }
+      
+      <mat-card-content>
+        <div class="card-header">
+          <mat-icon>health_and_safety</mat-icon>
+          <span class="card-title">Backend Health Status</span>
+        </div>
+        
+        <div class="health-status">
+          <div class="status-info">
+            <span class="status-label">Status:</span>
+            <span [class]="getStatusClass() + ' status-message'">
+              {{ healthStatus().message }}
+            </span>
+          </div>
+          
+          <button 
+            mat-raised-button 
+            color="primary" 
+            class="check-button"
+            (click)="checkHealth()"
+            [disabled]="loading()"
+            aria-label="Check backend health status">
+            @if (loading()) {
+              <mat-spinner diameter="20"></mat-spinner>
+              <span>Checking...</span>
+            } @else {
+              <mat-icon>refresh</mat-icon>
+              <span>Check Health</span>
+            }
+          </button>
+        </div>
+        
+        @if (healthStatus().lastChecked) {
+          <div class="last-checked">
+            Last checked: {{ healthStatus().lastChecked | date:'medium' }}
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+
+    <mat-divider></mat-divider>
+
+    <!-- TODO Application -->
+    <div class="features-section">
+      <app-task-list></app-task-list>
+    </div>
+
+    <!-- Router Outlet for Future Routes -->
+    <router-outlet></router-outlet>
+  </div>
+</div>

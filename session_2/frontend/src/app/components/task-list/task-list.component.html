@@ -1,0 +1,109 @@
+<div class="task-list-container">
+  <!-- Header -->
+  <div class="header">
+    <h1 class="title">
+      <mat-icon>task_alt</mat-icon>
+      TODO Application
+    </h1>
+    <p class="subtitle">Manage your tasks efficiently</p>
+  </div>
+
+  <!-- Add New Task Section -->
+  <mat-card class="add-task-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>add_circle_outline</mat-icon>
+        Add New Task
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <app-add-task (taskCreated)="onTaskCreated($event)"></app-add-task>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Tasks List Section -->
+  <div class="tasks-section">
+    <div class="section-header">
+      <h2>
+        <mat-icon>list</mat-icon>
+        My Tasks
+        <span class="task-count" *ngIf="tasks().length > 0">({{ tasks().length }})</span>
+      </h2>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div *ngIf="loading()" class="loading-container">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Loading tasks...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading() && tasks().length === 0" class="empty-state">
+      <mat-icon class="empty-icon">assignment_turned_in</mat-icon>
+      <h3>No tasks yet!</h3>
+      <p>Create your first task using the form above.</p>
+    </div>
+
+    <!-- Tasks List -->
+    <div *ngIf="!loading() && tasks().length > 0" class="tasks-grid">
+      <mat-card 
+        *ngFor="let task of tasks(); trackBy: trackByTaskId" 
+        class="task-card"
+        [class.completed]="task.completed"
+      >
+        <mat-card-content class="task-content">
+          <!-- Task Header -->
+          <div class="task-header">
+            <mat-checkbox 
+              [checked]="task.completed"
+              (change)="onToggleTask(task)"
+              class="task-checkbox"
+              [attr.aria-label]="'Mark task ' + (task.completed ? 'incomplete' : 'complete')"
+            >
+            </mat-checkbox>
+            
+            <div class="task-info">
+              <h3 class="task-title" [class.completed-text]="task.completed">
+                {{ task.title }}
+              </h3>
+              <p class="task-meta">
+                <mat-icon class="meta-icon">schedule</mat-icon>
+                {{ getRelativeTime(task.createdAt) }}
+                <span *ngIf="task.completed" class="completed-badge">
+                  <mat-icon class="completed-icon">check_circle</mat-icon>
+                  Completed
+                </span>
+              </p>
+            </div>
+
+            <div class="task-actions">
+              <button 
+                mat-icon-button 
+                (click)="onEditTask(task)"
+                matTooltip="Edit task"
+                [attr.aria-label]="'Edit task: ' + task.title"
+              >
+                <mat-icon>edit</mat-icon>
+              </button>
+              
+              <button 
+                mat-icon-button 
+                color="warn"
+                (click)="onDeleteTask(task)"
+                matTooltip="Delete task"
+                [attr.aria-label]="'Delete task: ' + task.title"
+              >
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </div>
+
+          <!-- Task Description -->
+          <div *ngIf="task.description" class="task-description">
+            <p [class.completed-text]="task.completed">{{ task.description }}</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>

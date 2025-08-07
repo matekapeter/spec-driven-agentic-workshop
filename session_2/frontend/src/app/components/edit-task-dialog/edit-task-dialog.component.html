@@ -1,0 +1,114 @@
+<!-- Dialog Header -->
+<div mat-dialog-title class="dialog-header">
+  <div class="title-section">
+    <mat-icon class="title-icon">edit</mat-icon>
+    <h2>Edit Task</h2>
+  </div>
+  <button 
+    mat-icon-button 
+    [mat-dialog-close]
+    class="close-button"
+    aria-label="Close dialog"
+  >
+    <mat-icon>close</mat-icon>
+  </button>
+</div>
+
+<!-- Dialog Content -->
+<div mat-dialog-content class="dialog-content">
+  <!-- Task Meta Information -->
+  <div class="task-meta">
+    <div class="meta-item">
+      <mat-icon class="meta-icon">schedule</mat-icon>
+      <span>Created: {{ getFormattedCreatedDate() }}</span>
+    </div>
+    <div class="meta-item" *ngIf="originalTask.completed">
+      <mat-icon class="meta-icon completed">check_circle</mat-icon>
+      <span>Status: Completed</span>
+    </div>
+  </div>
+
+  <!-- Edit Form -->
+  <form [formGroup]="taskForm" (ngSubmit)="onSave()" class="edit-form">
+    <!-- Title Field -->
+    <mat-form-field appearance="outline" class="title-field">
+      <mat-label>Task Title</mat-label>
+      <input 
+        matInput 
+        formControlName="title"
+        placeholder="Enter task title"
+        maxlength="255"
+        [attr.aria-describedby]="taskForm.get('title')?.errors ? 'title-error' : null"
+      >
+      <mat-icon matPrefix>task</mat-icon>
+      <mat-hint align="end">{{ taskForm.get('title')?.value?.length || 0 }}/255</mat-hint>
+      <mat-error id="title-error">{{ getTitleErrorMessage() }}</mat-error>
+    </mat-form-field>
+
+    <!-- Description Field -->
+    <mat-form-field appearance="outline" class="description-field">
+      <mat-label>Description</mat-label>
+      <textarea 
+        matInput 
+        formControlName="description"
+        placeholder="Enter task description"
+        rows="4"
+        maxlength="1000"
+        [attr.aria-describedby]="taskForm.get('description')?.errors ? 'description-error' : null"
+      ></textarea>
+      <mat-icon matPrefix>description</mat-icon>
+      <mat-hint align="end">{{ getDescriptionCharCount() }}/1000</mat-hint>
+      <mat-error id="description-error">{{ getDescriptionErrorMessage() }}</mat-error>
+    </mat-form-field>
+
+    <!-- Form Status -->
+    <div *ngIf="taskForm.invalid && taskForm.touched" class="form-status error" role="alert">
+      <mat-icon>error_outline</mat-icon>
+      Please fix the errors above before saving.
+    </div>
+
+    <div *ngIf="!isFormModified() && taskForm.touched" class="form-status info">
+      <mat-icon>info_outline</mat-icon>
+      No changes made to the task.
+    </div>
+  </form>
+</div>
+
+<!-- Dialog Actions -->
+<div mat-dialog-actions class="dialog-actions">
+  <button 
+    type="button"
+    mat-stroked-button
+    (click)="onReset()"
+    [disabled]="loading() || !isFormModified()"
+    class="reset-button"
+  >
+    <mat-icon>refresh</mat-icon>
+    Reset
+  </button>
+
+  <div class="primary-actions">
+    <button 
+      type="button"
+      mat-stroked-button 
+      (click)="onCancel()"
+      [disabled]="loading()"
+      class="cancel-button"
+    >
+      Cancel
+    </button>
+
+    <button 
+      type="button"
+      mat-raised-button 
+      color="primary"
+      (click)="onSave()"
+      [disabled]="taskForm.invalid || loading() || !isFormModified()"
+      class="save-button"
+    >
+      <mat-icon *ngIf="!loading()">save</mat-icon>
+      <mat-spinner *ngIf="loading()" diameter="20"></mat-spinner>
+      {{ loading() ? 'Saving...' : 'Save Changes' }}
+    </button>
+  </div>
+</div>
