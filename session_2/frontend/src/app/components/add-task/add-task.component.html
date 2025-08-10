@@ -1,0 +1,67 @@
+<form [formGroup]="taskForm" (ngSubmit)="onSubmit()" class="add-task-form">
+  <div class="form-fields">
+    <!-- Title Field -->
+    <mat-form-field appearance="outline" class="title-field">
+      <mat-label>Task Title</mat-label>
+      <input 
+        matInput 
+        formControlName="title"
+        placeholder="What needs to be done?"
+        maxlength="255"
+        [attr.aria-describedby]="taskForm.get('title')?.errors ? 'title-error' : null"
+      >
+      <mat-icon matPrefix>task</mat-icon>
+      <mat-hint align="end">{{ taskForm.get('title')?.value?.length || 0 }}/255</mat-hint>
+      <mat-error id="title-error">{{ getTitleErrorMessage() }}</mat-error>
+    </mat-form-field>
+
+    <!-- Description Field -->
+    <mat-form-field appearance="outline" class="description-field">
+      <mat-label>Description (Optional)</mat-label>
+      <textarea 
+        matInput 
+        formControlName="description"
+        placeholder="Add more details about this task..."
+        rows="3"
+        maxlength="1000"
+        [attr.aria-describedby]="taskForm.get('description')?.errors ? 'description-error' : null"
+      ></textarea>
+      <mat-icon matPrefix>description</mat-icon>
+      <mat-hint align="end">{{ getDescriptionCharCount() }}/1000</mat-hint>
+      <mat-error id="description-error">{{ getDescriptionErrorMessage() }}</mat-error>
+    </mat-form-field>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="form-actions">
+    <button 
+      type="button"
+      mat-stroked-button 
+      color="primary"
+      (click)="onReset()"
+      [disabled]="loading() || (!taskForm.dirty && !taskForm.touched)"
+      class="reset-button"
+    >
+      <mat-icon>clear</mat-icon>
+      Clear
+    </button>
+
+    <button 
+      type="submit"
+      mat-raised-button 
+      color="primary"
+      [disabled]="taskForm.invalid || loading()"
+      class="submit-button"
+    >
+      <mat-icon *ngIf="!loading()">add_circle</mat-icon>
+      <mat-spinner *ngIf="loading()" diameter="20"></mat-spinner>
+      {{ loading() ? 'Creating...' : 'Add Task' }}
+    </button>
+  </div>
+
+  <!-- Form Status Indicator -->
+  <div *ngIf="hasFormErrors()" class="form-status error" role="alert">
+    <mat-icon>error_outline</mat-icon>
+    Please fix the errors above before submitting.
+  </div>
+</form>

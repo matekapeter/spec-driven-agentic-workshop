@@ -1,0 +1,165 @@
+.add-task-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.title-field, .description-field {
+  width: 100%;
+
+  mat-icon[matPrefix] {
+    color: #666;
+    margin-right: 8px;
+  }
+}
+
+.title-field {
+  // Title field specific styles
+  input {
+    font-weight: 500;
+  }
+}
+
+.description-field {
+  // Description field specific styles
+  textarea {
+    line-height: 1.4;
+    resize: vertical;
+    min-height: 60px;
+  }
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+  
+  @media (max-width: 480px) {
+    flex-direction: column-reverse;
+    gap: 8px;
+    
+    .reset-button, .submit-button {
+      width: 100%;
+    }
+  }
+}
+
+.reset-button {
+  min-width: 100px;
+  
+  mat-icon {
+    margin-right: 8px;
+  }
+}
+
+.submit-button {
+  min-width: 120px;
+  font-weight: 500;
+  
+  mat-icon, mat-spinner {
+    margin-right: 8px;
+  }
+  
+  mat-spinner {
+    display: inline-block;
+  }
+}
+
+.form-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  
+  &.error {
+    background-color: #ffebee;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
+    
+    mat-icon {
+      color: #c62828;
+    }
+  }
+}
+
+// Form field customizations
+mat-form-field {
+  &.mat-focused {
+    .mat-form-field-outline-thick {
+      color: #1976d2;
+    }
+  }
+  
+  .mat-form-field-outline-thick {
+    transition: color 0.2s ease;
+  }
+}
+
+// Error state styling
+mat-error {
+  font-size: 0.75rem;
+  margin-top: 4px;
+}
+
+// Hint styling
+mat-hint {
+  font-size: 0.75rem;
+  color: #666;
+}
+
+// Loading state adjustments
+.submit-button:disabled {
+  cursor: not-allowed;
+}
+
+// Accessibility improvements
+@media (prefers-reduced-motion: reduce) {
+  mat-form-field .mat-form-field-outline-thick {
+    transition: none;
+  }
+}
+
+// High contrast mode
+@media (prefers-contrast: high) {
+  .form-status.error {
+    background-color: #ffe0e0;
+    border-width: 2px;
+  }
+  
+  mat-form-field {
+    .mat-form-field-outline {
+      border-width: 2px;
+    }
+  }
+}
+
+// Focus management
+input:focus, textarea:focus {
+  outline: none; // Material UI handles focus styling
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .add-task-form {
+    gap: 12px;
+  }
+  
+  .form-fields {
+    gap: 12px;
+  }
+  
+  .title-field, .description-field {
+    font-size: 16px; // Prevent zoom on iOS
+  }
+}

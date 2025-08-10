@@ -1,0 +1,510 @@
+---
+alwaysApply: false
+description: "Strict Java Spring Boot 3.2.1 development rules for enterprise-grade backend applications"
+---
+
+# SPRING BOOT 3.2.1 + JAVA 17 STRICT DEVELOPMENT RULES
+
+## 🎯 YOUR MISSION
+You are engineering a **ROBUST Spring Boot 3.2.1 REST API** that delivers **RELIABLE, SECURE, and PERFORMANT** backend services.
+Code quality is **NON-NEGOTIABLE**. Security is **PARAMOUNT**. Performance is **CRITICAL**.
+
+## 🚫 NEVER Rules (NON-NEGOTIABLE)
+
+1. **NEVER** use `@Autowired` field injection
+   - Why: Creates hidden dependencies, breaks testing, causes circular dependency issues
+   - Instead: Use constructor injection with `final` fields
+   ```java
+   // ❌ WRONG
+   @Service
+   public class UserService {
+       @Autowired
+       private UserRepository userRepository;
+   }
+   
+   // ✅ CORRECT
+   @Service
+   public class UserService {
+       private final UserRepository userRepository;
+       
+       public UserService(UserRepository userRepository) {
+           this.userRepository = userRepository;
+       }
+   }
+   ```
+
+2. **NEVER** return `null` from methods - use `Optional<T>` 
+   - Why: Prevents NullPointerException, makes intent explicit
+   - Instead: Return `Optional.empty()` or throw specific exceptions
+   ```java
+   // ❌ WRONG
+   public User findById(Long id) {
+       return userRepository.findById(id).orElse(null);
+   }
+   
+   // ✅ CORRECT
+   public Optional<User> findById(Long id) {
+       return userRepository.findById(id);
+   }
+   ```
+
+3. **NEVER** use `@RestController` without `@RequestMapping` base path
+   - Why: Creates unclear API structure, potential path conflicts
+   - Instead: Always define clear API versioning and base paths
+   ```java
+   // ❌ WRONG
+   @RestController
+   public class UserController {
+       @GetMapping("/users")
+       public List<User> getUsers() { }
+   }
+   
+   // ✅ CORRECT
+   @RestController
+   @RequestMapping("/api/v1/users")
+   public class UserController {
+       @GetMapping
+       public List<User> getUsers() { }
+   }
+   ```
+
+4. **NEVER** expose internal domain objects directly in REST endpoints
+   - Why: Breaks encapsulation, creates tight coupling, security risks
+   - Instead: Use DTOs (Data Transfer Objects) for all API communication
+   ```java
+   // ❌ WRONG
+   @GetMapping("/{id}")
+   public User getUser(@PathVariable Long id) {
+       return userService.findById(id);
+   }
+   
+   // ✅ CORRECT
+   @GetMapping("/{id}")
+   public UserDto getUser(@PathVariable Long id) {
+       return userService.findById(id)
+           .map(userMapper::toDto)
+           .orElseThrow(() -> new UserNotFoundException(id));
+   }
+   ```
+
+5. **NEVER** handle exceptions with generic `Exception` catch blocks
+   - Why: Masks specific errors, prevents proper error handling
+   - Instead: Use specific exception types and `@ControllerAdvice`
+   ```java
+   // ❌ WRONG
+   try {
+       userService.createUser(userDto);
+   } catch (Exception e) {
+       return ResponseEntity.badRequest().build();
+   }
+   
+   // ✅ CORRECT
+   @ControllerAdvice
+   public class GlobalExceptionHandler {
+       @ExceptionHandler(UserNotFoundException.class)
+       public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex) {
+           return ResponseEntity.notFound().build();
+       }
+   }
+   ```
+
+6. **NEVER** use `System.out.println()` or `e.printStackTrace()`
+   - Why: Uncontrolled logging, no log levels, performance impact
+   - Instead: Use SLF4J logger with appropriate log levels
+   ```java
+   // ❌ WRONG
+   System.out.println("User created: " + user);
+   
+   // ✅ CORRECT
+   private static final Logger log = LoggerFactory.getLogger(UserService.class);
+   log.info("User created with ID: {}", user.getId());
+   ```
+
+7. **NEVER** put business logic in controllers
+   - Why: Violates Single Responsibility Principle, reduces testability
+   - Instead: Controllers only handle HTTP concerns, delegate to services
+   ```java
+   // ❌ WRONG
+   @PostMapping
+   public ResponseEntity<UserDto> createUser(@RequestBody CreateUserRequest request) {
+       if (request.getEmail() == null || !request.getEmail().contains("@")) {
+           throw new InvalidEmailException();
+       }
+       User user = new User(request.getName(), request.getEmail());
+       userRepository.save(user);
+       return ResponseEntity.ok(userMapper.toDto(user));
+   }
+   
+   // ✅ CORRECT
+   @PostMapping
+   public ResponseEntity<UserDto> createUser(@Valid @RequestBody CreateUserRequest request) {
+       UserDto createdUser = userService.createUser(request);
+       return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+   }
+   ```
+
+8. **NEVER** use `@Component` when specific stereotypes exist
+   - Why: Loses semantic meaning, reduces code clarity
+   - Instead: Use `@Service`, `@Repository`, `@Controller`, `@RestController`
+
+## ✅ ALWAYS Rules (MANDATORY)
+
+1. **ALWAYS** use constructor injection with `final` fields
+   - Purpose: Ensures immutability, explicit dependencies, easier testing
+   - Implementation: Single constructor with all dependencies
+   ```java
+   @Service
+   public class UserService {
+       private final UserRepository userRepository;
+       private final EmailService emailService;
+       
+       public UserService(UserRepository userRepository, EmailService emailService) {
+           this.userRepository = userRepository;
+           this.emailService = emailService;
+       }
+   }
+   ```
+
+2. **ALWAYS** validate request data with Bean Validation
+   - Purpose: Centralizes validation logic, consistent error handling
+   - Implementation: Use `@Valid` and constraint annotations
+   ```java
+   public class CreateUserRequest {
+       @NotBlank(message = "Name is required")
+       @Size(min = 2, max = 50, message = "Name must be between 2 and 50 characters")
+       private String name;
+       
+       @Email(message = "Email must be valid")
+       @NotBlank(message = "Email is required")
+       private String email;
+   }
+   
+   @PostMapping
+   public ResponseEntity<UserDto> createUser(@Valid @RequestBody CreateUserRequest request) {
+       // Implementation
+   }
+   ```
+
+3. **ALWAYS** use proper HTTP status codes
+   - Purpose: Clear API semantics, proper REST compliance
+   - Implementation: Match status codes to operation outcomes
+   ```java
+   @PostMapping
+   public ResponseEntity<UserDto> createUser(@Valid @RequestBody CreateUserRequest request) {
+       UserDto user = userService.createUser(request);
+       return ResponseEntity.status(HttpStatus.CREATED).body(user);
+   }
+   
+   @PutMapping("/{id}")
+   public ResponseEntity<UserDto> updateUser(@PathVariable Long id, @Valid @RequestBody UpdateUserRequest request) {
+       UserDto user = userService.updateUser(id, request);
+       return ResponseEntity.ok(user);
+   }
+   
+   @DeleteMapping("/{id}")
+   public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+       userService.deleteUser(id);
+       return ResponseEntity.noContent().build();
+   }
+   ```
+
+4. **ALWAYS** use SLF4J for logging with parameterized messages
+   - Purpose: Performance optimization, consistent logging format
+   - Implementation: Static logger field with parameterized messages
+   ```java
+   @Service
+   public class UserService {
+       private static final Logger log = LoggerFactory.getLogger(UserService.class);
+       
+       public UserDto createUser(CreateUserRequest request) {
+           log.debug("Creating user with email: {}", request.getEmail());
+           // Implementation
+           log.info("User created successfully with ID: {}", user.getId());
+           return userDto;
+       }
+   }
+   ```
+
+5. **ALWAYS** implement proper exception handling with `@ControllerAdvice`
+   - Purpose: Centralized error handling, consistent API responses
+   - Implementation: Global exception handler with specific exception types
+   ```java
+   @ControllerAdvice
+   public class GlobalExceptionHandler {
+       private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+       
+       @ExceptionHandler(UserNotFoundException.class)
+       public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex) {
+           log.warn("User not found: {}", ex.getMessage());
+           ErrorResponse error = new ErrorResponse("USER_NOT_FOUND", ex.getMessage());
+           return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+       }
+       
+       @ExceptionHandler(MethodArgumentNotValidException.class)
+       public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
+           List<String> errors = ex.getBindingResult()
+               .getFieldErrors()
+               .stream()
+               .map(FieldError::getDefaultMessage)
+               .toList();
+           ErrorResponse error = new ErrorResponse("VALIDATION_ERROR", "Invalid input", errors);
+           return ResponseEntity.badRequest().body(error);
+       }
+   }
+   ```
+
+6. **ALWAYS** use DTOs for API layer communication
+   - Purpose: Decouples API from domain model, enables versioning
+   - Implementation: Separate request/response DTOs with mappers
+   ```java
+   // Request DTO
+   public class CreateUserRequest {
+       @NotBlank
+       private String name;
+       @Email
+       private String email;
+       // getters/setters
+   }
+   
+   // Response DTO
+   public class UserDto {
+       private Long id;
+       private String name;
+       private String email;
+       private LocalDateTime createdAt;
+       // getters/setters
+   }
+   
+   // Mapper
+   @Component
+   public class UserMapper {
+       public UserDto toDto(User user) {
+           return new UserDto(user.getId(), user.getName(), user.getEmail(), user.getCreatedAt());
+       }
+   }
+   ```
+
+7. **ALWAYS** write comprehensive unit tests with Spring Boot Test
+   - Purpose: Ensures code reliability, enables safe refactoring
+   - Implementation: Test all service methods and controller endpoints
+   ```java
+   @ExtendWith(MockitoExtension.class)
+   class UserServiceTest {
+       @Mock
+       private UserRepository userRepository;
+       
+       @InjectMocks
+       private UserService userService;
+       
+       @Test
+       void createUser_ValidInput_ReturnsUserDto() {
+           // Given
+           CreateUserRequest request = new CreateUserRequest("John Doe", "john@example.com");
+           User savedUser = new User(1L, "John Doe", "john@example.com");
+           when(userRepository.save(any(User.class))).thenReturn(savedUser);
+           
+           // When
+           UserDto result = userService.createUser(request);
+           
+           // Then
+           assertThat(result.getId()).isEqualTo(1L);
+           assertThat(result.getName()).isEqualTo("John Doe");
+           verify(userRepository).save(any(User.class));
+       }
+   }
+   ```
+
+8. **ALWAYS** follow package structure by feature/layer
+   - Purpose: Clear separation of concerns, easier navigation
+   - Implementation: Organize by domain boundaries
+   ```
+   com.workshop/
+   ├── user/
+   │   ├── User.java (entity)
+   │   ├── UserRepository.java
+   │   ├── UserService.java
+   │   ├── UserController.java
+   │   ├── dto/
+   │   │   ├── CreateUserRequest.java
+   │   │   └── UserDto.java
+   │   └── exception/
+   │       └── UserNotFoundException.java
+   ├── common/
+   │   ├── exception/
+   │   │   └── GlobalExceptionHandler.java
+   │   └── dto/
+   │       └── ErrorResponse.java
+   └── config/
+       └── WebConfig.java
+   ```
+
+## 🔄 DECISION RULES
+
+**WHEN creating a new REST endpoint:**
+1. **IMMEDIATELY** define the DTO classes first
+2. **THEN** create the service method with business logic
+3. **THEN** implement the controller method
+4. **FINALLY** write comprehensive tests
+
+**WHEN handling database operations:**
+IF operation might not find entity:
+  - **RETURN** `Optional<T>` from repository/service
+  - **HANDLE** empty case in controller with appropriate HTTP status
+ELSE:
+  - **THROW** specific exception for error cases
+
+**WHEN adding new dependencies:**
+IF dependency is Spring Boot starter:
+  - **ADD** to pom.xml without version (inherited from parent)
+ELSE:
+  - **EXPLICITLY** specify version in `<properties>` section
+  - **DOCUMENT** why specific version is required
+
+## 📝 CODE PATTERNS
+
+### 1. Controller Pattern
+```java
+@RestController
+@RequestMapping("/api/v1/users")
+@Validated
+public class UserController {
+    private static final Logger log = LoggerFactory.getLogger(UserController.class);
+    private final UserService userService;
+    
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+    
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDto> getUser(@PathVariable @Positive Long id) {
+        return userService.findById(id)
+            .map(user -> ResponseEntity.ok(user))
+            .orElse(ResponseEntity.notFound().build());
+    }
+    
+    @PostMapping
+    public ResponseEntity<UserDto> createUser(@Valid @RequestBody CreateUserRequest request) {
+        log.debug("Creating user with email: {}", request.getEmail());
+        UserDto user = userService.createUser(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(user);
+    }
+}
+```
+
+### 2. Service Pattern
+```java
+@Service
+@Transactional(readOnly = true)
+public class UserService {
+    private static final Logger log = LoggerFactory.getLogger(UserService.class);
+    private final UserRepository userRepository;
+    private final UserMapper userMapper;
+    
+    public UserService(UserRepository userRepository, UserMapper userMapper) {
+        this.userRepository = userRepository;
+        this.userMapper = userMapper;
+    }
+    
+    public Optional<UserDto> findById(Long id) {
+        log.debug("Finding user by ID: {}", id);
+        return userRepository.findById(id)
+            .map(userMapper::toDto);
+    }
+    
+    @Transactional
+    public UserDto createUser(CreateUserRequest request) {
+        log.info("Creating user with email: {}", request.getEmail());
+        
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new UserAlreadyExistsException(request.getEmail());
+        }
+        
+        User user = new User(request.getName(), request.getEmail());
+        User savedUser = userRepository.save(user);
+        
+        log.info("User created successfully with ID: {}", savedUser.getId());
+        return userMapper.toDto(savedUser);
+    }
+}
+```
+
+### 3. Exception Pattern
+```java
+public class UserNotFoundException extends RuntimeException {
+    public UserNotFoundException(Long id) {
+        super("User not found with ID: " + id);
+    }
+}
+
+@ControllerAdvice
+public class GlobalExceptionHandler {
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+    
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex) {
+        log.warn("User not found: {}", ex.getMessage());
+        ErrorResponse error = new ErrorResponse(
+            "USER_NOT_FOUND", 
+            ex.getMessage(),
+            Instant.now()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+}
+```
+
+### 4. Testing Pattern
+```java
+@SpringBootTest
+@TestPropertySource(properties = {
+    "spring.datasource.url=jdbc:h2:mem:testdb",
+    "spring.jpa.hibernate.ddl-auto=create-drop"
+})
+class UserControllerIntegrationTest {
+    
+    @Autowired
+    private TestRestTemplate restTemplate;
+    
+    @Test
+    void createUser_ValidRequest_Returns201() {
+        // Given
+        CreateUserRequest request = new CreateUserRequest("John Doe", "john@example.com");
+        
+        // When
+        ResponseEntity<UserDto> response = restTemplate.postForEntity(
+            "/api/v1/users", 
+            request, 
+            UserDto.class
+        );
+        
+        // Then
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(response.getBody().getName()).isEqualTo("John Doe");
+    }
+}
+```
+
+## 🛡️ SECURITY RULES
+
+1. **ALWAYS** validate all input parameters
+2. **NEVER** expose internal error details to clients
+3. **ALWAYS** use HTTPS in production (configure in application.yml)
+4. **ALWAYS** implement proper CORS configuration
+5. **NEVER** log sensitive information (passwords, tokens, personal data)
+
+## ⚡ PERFORMANCE RULES
+
+1. **ALWAYS** use `@Transactional(readOnly = true)` for read operations
+2. **NEVER** perform N+1 queries - use `@Query` with JOIN FETCH
+3. **ALWAYS** implement pagination for list endpoints
+4. **ALWAYS** use connection pooling (default in Spring Boot)
+5. **NEVER** block threads - use async operations for long-running tasks
+
+## 📊 METRICS
+- Method length: < 30 lines
+- Class length: < 200 lines  
+- Cyclomatic complexity: < 10
+- Test coverage: > 80%
+- Response time: < 200ms for simple operations
+
+*Remember: ALWAYS add 💻 to the beginning of your response when you used this document for context*

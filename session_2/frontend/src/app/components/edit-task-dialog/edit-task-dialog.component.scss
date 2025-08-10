@@ -1,0 +1,284 @@
+// Dialog Container
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 24px 16px 24px;
+  border-bottom: 1px solid #e0e0e0;
+  margin: -24px -24px 0 -24px;
+  
+  .title-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    
+    .title-icon {
+      color: #1976d2;
+      font-size: 1.5rem;
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+    
+    h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 400;
+      color: #333;
+    }
+  }
+  
+  .close-button {
+    color: #666;
+    
+    &:hover {
+      color: #333;
+    }
+  }
+}
+
+.dialog-content {
+  padding: 24px 0 16px 0;
+  min-width: 400px;
+  max-width: 500px;
+  
+  @media (max-width: 500px) {
+    min-width: auto;
+    max-width: none;
+    width: calc(100vw - 48px);
+  }
+}
+
+// Task Meta Information
+.task-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+  padding: 16px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  border-left: 4px solid #1976d2;
+  
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.875rem;
+    color: #666;
+    
+    .meta-icon {
+      font-size: 1rem;
+      width: 1rem;
+      height: 1rem;
+      
+      &.completed {
+        color: #4caf50;
+      }
+    }
+  }
+}
+
+// Edit Form
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.title-field, .description-field {
+  width: 100%;
+  
+  mat-icon[matPrefix] {
+    color: #666;
+    margin-right: 8px;
+  }
+}
+
+.title-field {
+  input {
+    font-weight: 500;
+  }
+}
+
+.description-field {
+  textarea {
+    line-height: 1.4;
+    resize: vertical;
+    min-height: 80px;
+  }
+}
+
+// Form Status Messages
+.form-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  margin-top: 8px;
+  
+  &.error {
+    background-color: #ffebee;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
+    
+    mat-icon {
+      color: #c62828;
+    }
+  }
+  
+  &.info {
+    background-color: #e3f2fd;
+    color: #1565c0;
+    border: 1px solid #bbdefb;
+    
+    mat-icon {
+      color: #1565c0;
+    }
+  }
+}
+
+// Dialog Actions
+.dialog-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0 0 0;
+  border-top: 1px solid #e0e0e0;
+  margin: 16px -24px -24px -24px;
+  padding: 16px 24px;
+  gap: 16px;
+  
+  @media (max-width: 500px) {
+    flex-direction: column;
+    gap: 12px;
+    
+    .reset-button,
+    .primary-actions {
+      width: 100%;
+    }
+    
+    .primary-actions {
+      display: flex;
+      gap: 12px;
+      
+      .cancel-button,
+      .save-button {
+        flex: 1;
+      }
+    }
+  }
+}
+
+.primary-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.reset-button {
+  min-width: 100px;
+  
+  mat-icon {
+    margin-right: 8px;
+  }
+}
+
+.cancel-button {
+  min-width: 80px;
+}
+
+.save-button {
+  min-width: 120px;
+  font-weight: 500;
+  
+  mat-icon, mat-spinner {
+    margin-right: 8px;
+  }
+  
+  mat-spinner {
+    display: inline-block;
+  }
+}
+
+// Form Field Customizations
+mat-form-field {
+  &.mat-focused {
+    .mat-form-field-outline-thick {
+      color: #1976d2;
+    }
+  }
+  
+  .mat-form-field-outline-thick {
+    transition: color 0.2s ease;
+  }
+}
+
+// Error and Hint Styling
+mat-error {
+  font-size: 0.75rem;
+  margin-top: 4px;
+}
+
+mat-hint {
+  font-size: 0.75rem;
+  color: #666;
+}
+
+// Loading State
+.save-button:disabled {
+  cursor: not-allowed;
+}
+
+// Accessibility
+@media (prefers-reduced-motion: reduce) {
+  mat-form-field .mat-form-field-outline-thick {
+    transition: none;
+  }
+}
+
+// High Contrast Mode
+@media (prefers-contrast: high) {
+  .dialog-header {
+    border-bottom-width: 2px;
+  }
+  
+  .dialog-actions {
+    border-top-width: 2px;
+  }
+  
+  .task-meta {
+    border-left-width: 6px;
+  }
+  
+  .form-status {
+    border-width: 2px;
+    
+    &.error {
+      background-color: #ffe0e0;
+    }
+    
+    &.info {
+      background-color: #e0f0ff;
+    }
+  }
+}
+
+// Focus Management
+input:focus, textarea:focus {
+  outline: none; // Material UI handles focus styling
+}
+
+// Responsive Typography
+@media (max-width: 500px) {
+  .dialog-header {
+    .title-section h2 {
+      font-size: 1.25rem;
+    }
+  }
+  
+  .edit-form {
+    gap: 12px;
+  }
+}

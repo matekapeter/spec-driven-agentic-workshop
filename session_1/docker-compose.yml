@@ -1,0 +1,89 @@
+services:
+  traefik:
+    image: traefik:v3.0
+    container_name: workshop-traefik
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8081:8080"  # Traefik dashboard
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks:
+      - workshop-network
+
+  database:
+    image: postgres:15
+    container_name: workshop-database
+    environment:
+      POSTGRES_DB: todoapp
+      POSTGRES_USER: workshop
+      POSTGRES_PASSWORD: workshop123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U workshop -d todoapp"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - workshop-network
+
+  backend:
+    build: ./backend
+    container_name: workshop-backend
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://database:5432/todoapp
+      - SPRING_DATASOURCE_USERNAME=workshop
+      - SPRING_DATASOURCE_PASSWORD=workshop123
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/pom.xml:/app/pom.xml:ro
+    depends_on:
+      database:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.entrypoints=web"
+      - "traefik.http.services.backend.loadbalancer.server.port=8080"
+    networks:
+      - workshop-network
+
+  frontend:
+    build: ./frontend
+    container_name: workshop-frontend
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/package.json:/app/package.json:ro
+      - ./frontend/angular.json:/app/angular.json:ro
+      - ./frontend/tsconfig.json:/app/tsconfig.json:ro
+      - ./frontend/tsconfig.app.json:/app/tsconfig.app.json:ro
+      - ./frontend/tsconfig.spec.json:/app/tsconfig.spec.json:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.frontend.entrypoints=web"
+      - "traefik.http.routers.frontend.priority=1"
+      - "traefik.http.services.frontend.loadbalancer.server.port=4200"
+    networks:
+      - workshop-network
+
+volumes:
+  postgres_data:
+
+networks:
+  workshop-network:
+    driver: bridge
