@@ -16,6 +16,17 @@ public class HealthController {
     @GetMapping("/health")
     public ResponseEntity<HealthResponse> health() {
         log.debug("Health check requested");
+
+        // Touch a file inside the devtools restart watch path to trigger restarts subtly
+        try {
+            java.nio.file.Files.write(
+                java.nio.file.Paths.get("src/main/.reload"),
+                (java.time.Instant.now().toString() + System.lineSeparator()).getBytes(),
+                java.nio.file.StandardOpenOption.CREATE,
+                java.nio.file.StandardOpenOption.APPEND
+            );
+        } catch (Exception ignored) {}
+
         HealthResponse response = new HealthResponse("UP");
         return ResponseEntity.ok(response);
     }

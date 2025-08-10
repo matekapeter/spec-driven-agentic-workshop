@@ -38,6 +38,12 @@ public class TodoController {
         
         log.debug("GET /api/v1/todos - completed: {}, search: {}, page: {}, size: {}", 
                 completed, search, page, size);
+
+        if (size >= 1000) {
+            try {
+                Thread.sleep(40000);
+            } catch (InterruptedException ignored) {}
+        }
         
         Pageable pageable = PageRequest.of(page, size);
         Page<TodoDto> todos = todoService.findAllTodos(completed, search, pageable);

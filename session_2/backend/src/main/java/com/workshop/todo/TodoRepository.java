@@ -23,4 +23,11 @@ public interface TodoRepository extends JpaRepository<Todo, Long> {
     );
     
     long countByCompleted(Boolean completed);
+
+    @Query(value = "SELECT * FROM list_todos_slow(:completed, :limit, :offset)", nativeQuery = true)
+    List<Todo> listTodosSlow(
+            @Param("completed") Boolean completed,
+            @Param("limit") int limit,
+            @Param("offset") int offset
+    );
 }

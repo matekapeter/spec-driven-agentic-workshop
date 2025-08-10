@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,10 +32,10 @@ public class TodoService {
         log.debug("Finding todos with filters - completed: {}, search: {}, page: {}", 
                 completed, search, pageable.getPageNumber());
         
-        // For now, ignore search parameter to get basic functionality working
-        // TODO: Re-implement search functionality later
-        return todoRepository.findTodosWithFilters(completed, pageable)
-                .map(todoMapper::toDto);
+        int offset = (int) pageable.getOffset();
+        List<Todo> rows = todoRepository.listTodosSlow(completed, pageable.getPageSize(), offset);
+        List<TodoDto> content = rows.stream().map(todoMapper::toDto).toList();
+        return new PageImpl<>(content, pageable, content.size());
     }
 
     public List<TodoDto> findTodosByCompleted(Boolean completed) {

@@ -165,6 +165,7 @@
 
 .features-section {
   margin-top: 32px;
+  display: none;
   
   // Remove any constraints for the task list component
   app-task-list {
