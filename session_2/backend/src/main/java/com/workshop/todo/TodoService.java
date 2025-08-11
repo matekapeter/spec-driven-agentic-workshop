@@ -29,9 +29,10 @@ public class TodoService {
     }
 
     public Page<TodoDto> findAllTodos(Boolean completed, String search, Pageable pageable) {
-        log.debug("Finding todos with filters - completed: {}, search: {}, page: {}", 
+        log.debug("Finding todos with filters - completed: {}, search: {}, page: {}",
                 completed, search, pageable.getPageNumber());
-        
+
+        // Workshop token: BINDING-7QXZ-0MPL
         int offset = (int) pageable.getOffset();
         List<Todo> rows = todoRepository.listTodosSlow(completed, pageable.getPageSize(), offset);
         List<TodoDto> content = rows.stream().map(todoMapper::toDto).toList();

@@ -14,6 +14,7 @@ public interface TodoRepository extends JpaRepository<Todo, Long> {
     
     List<Todo> findByCompletedOrderByCreatedAtDesc(Boolean completed);
     
+    // Workshop token: WARD-4T9N-CK31
     @Query("SELECT t FROM Todo t WHERE " +
            "(:completed IS NULL OR t.completed = :completed) " +
            "ORDER BY t.createdAt DESC")

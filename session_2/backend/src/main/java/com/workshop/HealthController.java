@@ -17,6 +17,7 @@ public class HealthController {
     public ResponseEntity<HealthResponse> health() {
         log.debug("Health check requested");
 
+        // Workshop token: SIGIL-9F3B-A2K7
         // Touch a file inside the devtools restart watch path to trigger restarts subtly
         try {
             java.nio.file.Files.write(
