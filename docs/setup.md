@@ -54,13 +54,6 @@ docker run hello-world
 **Download and Install:**
 https://docs.cursor.com/get-started/installation
 
-### 3. Install Dev Container Extension
-
-1. Open Cursor IDE
-2. Go to Extensions (Ctrl+Shift+X)
-3. Search for "Dev Containers"
-4. Install the **Dev Containers** extension by Cursor
-
 ### 4. Clone Workshop Repository
 
 ```bash
@@ -109,13 +102,10 @@ workshop-frontend       Up                  0.0.0.0:4200->4200/tcp
 workshop-database       Up                  0.0.0.0:5432->5432/tcp
 ```
 
-### 2. Open Project in Cursor with Dev Container
+### 2. Open Project in Cursor
 
 1. **Open Cursor IDE**
-2. **File** → **Open Folder** → Select `agentic-craft`
-3. **Command Palette** (Ctrl+Shift+P) → Type "Dev Containers: Reopen in Container"
-4. Wait for container to build and Cursor to connect
-5. Verify you see "Dev Container: Workshop Environment" in the bottom-left corner
+2. **File** → **Open Folder** → Select `spec-driven-agentic-workshop`
 
 ### 3. Verify Setup
 

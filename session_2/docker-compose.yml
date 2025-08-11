@@ -1,7 +1,7 @@
 services:
   traefik:
     image: traefik:v3.0
-    container_name: workshop-traefik
+    container_name: workshop-s2-traefik
     command:
       - "--api.insecure=true"
       - "--providers.docker=true"
@@ -13,15 +13,17 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     networks:
-      - workshop-network
+      - workshop-s2-network
 
   database:
     image: postgres:15
-    container_name: workshop-database
+    container_name: workshop-s2-database
     environment:
       POSTGRES_DB: todoapp
       POSTGRES_USER: workshop
       POSTGRES_PASSWORD: workshop123
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -30,11 +32,11 @@ services:
       timeout: 10s
       retries: 3
     networks:
-      - workshop-network
+      - workshop-s2-network
 
   backend:
     build: ./backend
-    container_name: workshop-backend
+    container_name: workshop-s2-backend
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://database:5432/todoapp
       - SPRING_DATASOURCE_USERNAME=workshop
@@ -57,11 +59,11 @@ services:
       - "traefik.http.routers.backend.entrypoints=web"
       - "traefik.http.services.backend.loadbalancer.server.port=8080"
     networks:
-      - workshop-network
+      - workshop-s2-network
 
   frontend:
     build: ./frontend
-    container_name: workshop-frontend
+    container_name: workshop-s2-frontend
     volumes:
       - ./frontend/src:/app/src
       - ./frontend/package.json:/app/package.json:ro
@@ -79,11 +81,11 @@ services:
       - "traefik.http.routers.frontend.priority=1"
       - "traefik.http.services.frontend.loadbalancer.server.port=4200"
     networks:
-      - workshop-network
+      - workshop-s2-network
 
 volumes:
   postgres_data:
 
 networks:
-  workshop-network:
+  workshop-s2-network:
     driver: bridge
