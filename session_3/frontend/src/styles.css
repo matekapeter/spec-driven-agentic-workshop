@@ -1,0 +1,66 @@
+/* Import Angular Material Theme */
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
+
+/* Global Styles */
+html, body { 
+  height: 100%; 
+  margin: 0; 
+  font-family: Roboto, "Helvetica Neue", sans-serif; 
+  background-color: #fafafa;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Custom Material Theme Overrides */
+.mat-mdc-card {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+  border-radius: 8px !important;
+}
+
+.mat-mdc-button {
+  border-radius: 6px !important;
+  font-weight: 500 !important;
+}
+
+/* Loading overlay styles */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Health status styles */
+.health-status-healthy {
+  color: #4caf50;
+  font-weight: 600;
+}
+
+.health-status-unhealthy {
+  color: #f44336;
+  font-weight: 600;
+}
+
+/* Snackbar custom styles */
+.success-snackbar {
+  background-color: #4caf50 !important;
+  color: white !important;
+}
+
+.error-snackbar {
+  background-color: #f44336 !important;
+  color: white !important;
+}
+
+.warning-snackbar {
+  background-color: #ff9800 !important;
+  color: white !important;
+}

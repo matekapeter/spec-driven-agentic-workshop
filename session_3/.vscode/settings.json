@@ -1,0 +1,11 @@
+{
+  "window.title": "session-3",
+  "workbench.colorCustomizations": {
+    "titleBar.activeBackground": "#1DB954",
+    "titleBar.activeForeground": "#000000",
+    "titleBar.inactiveBackground": "#1DB954",
+    "titleBar.inactiveForeground": "#000000",
+    "statusBar.background": "#1DB954",
+    "statusBar.foreground": "#000000"
+  }
+}
