@@ -14,83 +14,132 @@
 ## Overview
 
 ### Project Description
-A client-side web application that integrates with Spotify's Web API to display read-only music data including current playback status, recently played tracks, user profile information, and music library details.
+A full-stack web application that integrates with Spotify's Web API to display read-only music data including current playback status, recently played tracks, user profile information, and music library details with an aurora-themed visual design.
 
 ### Key Requirements
 - **Read-only access** to Spotify user data
-- **Client-side only** implementation (no backend server)
-- **OAuth 2.0 Implicit Grant** authentication flow
+- **Full-stack architecture** with Angular frontend and Spring Boot backend
+- **OAuth 2.0 Authorization Code with PKCE** authentication flow
 - **Real-time updates** for playback information
 - **Responsive design** for desktop and mobile
-- **Works with free Spotify accounts**
+- **Aurora-themed UI** with northern lights animations
+- **Works with free and premium Spotify accounts**
 
 ### Technology Stack
-- **Frontend**: Vanilla HTML5, CSS3, JavaScript (ES6+)
-- **Authentication**: OAuth 2.0 Implicit Grant Flow
-- **API**: Spotify Web API v1
-- **Storage**: Browser sessionStorage (temporary token storage)
+- **Frontend**: Angular 17 with TypeScript, Angular Material UI
+- **Backend**: Spring Boot 3.2.1 with Java 17, Spring Data JPA
+- **Database**: PostgreSQL for user data and music metadata caching
+- **Authentication**: OAuth 2.0 Authorization Code with PKCE Flow
+- **API Integration**: Spotify Web API v1
+- **Containerization**: Docker for both frontend and backend
 
 ## Architecture
 
 ### System Architecture
 ```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   Web Browser   │────│   Spotify Auth   │────│  Spotify API    │
-│                 │    │     Server       │    │                 │
-│ ┌─────────────┐ │    │                  │    │ ┌─────────────┐ │
-│ │    SPA      │ │    │                  │    │ │   Web API   │ │
-│ │ Dashboard   │◄┼────┼──────────────────┼────┼►│  Endpoints  │ │
-│ │             │ │    │                  │    │ │             │ │
-│ └─────────────┘ │    │                  │    │ └─────────────┘ │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
+┌─────────────────────┐    ┌─────────────────────┐    ┌─────────────────┐
+│    Angular SPA      │    │   Spring Boot API   │    │  Spotify API    │
+│      Frontend       │    │      Backend        │    │                 │
+│ ┌─────────────────┐ │    │ ┌─────────────────┐ │    │ ┌─────────────┐ │
+│ │  Aurora UI      │ │    │ │  OAuth Handler  │ │    │ │   Web API   │ │
+│ │  Components     │◄┼────┼►│  API Proxy      │◄┼────┼►│  Endpoints  │ │
+│ │  Music Dashboard│ │    │ │  Data Cache     │ │    │ │             │ │
+│ └─────────────────┘ │    │ └─────────────────┘ │    │ └─────────────┘ │
+│                     │    │          │          │    │                 │
+│                     │    │ ┌─────────────────┐ │    │                 │
+│                     │    │ │   PostgreSQL    │ │    │                 │
+│                     │    │ │    Database     │ │    │                 │
+│                     │    │ └─────────────────┘ │    │                 │
+└─────────────────────┘    └─────────────────────┘    └─────────────────┘
+        Port: 4200                Port: 8080
 ```
 
-### Component Structure
+### Frontend Component Structure (Angular)
 ```
-Application
-├── Authentication Manager
-│   ├── OAuth Flow Handler
-│   ├── Token Storage
-│   └── Token Validation
-├── API Client
-│   ├── HTTP Request Handler
-│   ├── Rate Limiting
-│   └── Error Handling
-├── Data Manager
-│   ├── Current Track Service
-│   ├── Recent Tracks Service
-│   ├── User Profile Service
-│   └── Cache Management
-└── UI Components
-    ├── Login Component
-    ├── Dashboard Component
-    ├── Track Display Component
-    └── Error Display Component
+src/app/
+├── components/
+│   ├── aurora-background/       # Background animation component
+│   ├── current-playback/        # Current track display
+│   ├── listening-history/       # Recent tracks list
+│   ├── top-artists/            # User's top artists
+│   ├── audio-analysis/         # Track audio features
+│   ├── podcast-section/        # Recent podcasts
+│   └── user-playlists/         # User's playlists
+├── services/
+│   ├── auth.service.ts         # Spotify OAuth handling
+│   ├── spotify-api.service.ts  # Backend API communication
+│   ├── user.service.ts         # User data management
+│   └── playback.service.ts     # Real-time playback updates
+├── interfaces/
+│   ├── user.interface.ts       # User data types
+│   ├── track.interface.ts      # Track data types
+│   └── playback.interface.ts   # Playback state types
+└── shared/
+    ├── material.module.ts      # Angular Material components
+    └── pipes/                  # Custom pipes for data formatting
+```
+
+### Backend Component Structure (Spring Boot)
+```
+src/main/java/com/workshop/
+├── controller/
+│   ├── AuthController.java     # OAuth flow endpoints
+│   ├── UserController.java     # User data endpoints
+│   ├── PlaybackController.java # Current playback endpoints
+│   └── SpotifyController.java  # Spotify API proxy
+├── service/
+│   ├── SpotifyAuthService.java # OAuth token management
+│   ├── SpotifyApiService.java  # Spotify Web API integration
+│   ├── UserService.java        # User data business logic
+│   └── CacheService.java       # Data caching logic
+├── entity/
+│   ├── User.java              # User entity
+│   ├── Track.java             # Track entity
+│   ├── Artist.java            # Artist entity
+│   └── AudioFeatures.java     # Audio features entity
+├── repository/
+│   ├── UserRepository.java    # User data access
+│   ├── TrackRepository.java   # Track data access
+│   └── ArtistRepository.java  # Artist data access
+├── dto/
+│   ├── AuthTokenDto.java      # OAuth token response
+│   ├── CurrentPlaybackDto.java # Playback state response
+│   └── TrackDto.java          # Track data response
+└── config/
+    ├── SecurityConfig.java    # Security configuration
+    ├── WebConfig.java         # CORS and web configuration
+    └── DatabaseConfig.java    # Database configuration
 ```
 
 ## OAuth 2.0 Authentication
 
-### Flow Type: Implicit Grant
-The Implicit Grant flow is used for client-side applications that cannot securely store client secrets.
+### Flow Type: Authorization Code with PKCE
+The Authorization Code with PKCE flow is used for secure authentication in single-page applications, providing better security than the deprecated Implicit Grant flow.
 
 ### Authentication Flow Sequence
 
 ```mermaid
 sequenceDiagram
     participant User
-    participant App
+    participant Angular
+    participant SpringBoot
     participant Spotify
     
-    User->>App: Click "Login with Spotify"
-    App->>Spotify: Redirect to authorization URL
+    User->>Angular: Click "Login with Spotify"
+    Angular->>Angular: Generate PKCE code challenge
+    Angular->>Spotify: Redirect to authorization URL with PKCE
     Note over Spotify: User enters credentials
     Spotify->>User: Authorization prompt
     User->>Spotify: Grant permissions
-    Spotify->>App: Redirect with access token
-    App->>App: Extract token from URL fragment
-    App->>Spotify: Validate token with API call
-    Spotify->>App: Return user profile
-    App->>User: Display dashboard
+    Spotify->>Angular: Redirect with authorization code
+    Angular->>SpringBoot: Send authorization code + code verifier
+    SpringBoot->>Spotify: Exchange code for access token
+    Spotify->>SpringBoot: Return access token + refresh token
+    SpringBoot->>SpringBoot: Store tokens securely
+    SpringBoot->>Spotify: Get user profile
+    Spotify->>SpringBoot: Return user data
+    SpringBoot->>Angular: Return user session
+    Angular->>User: Display dashboard
 ```
 
 ### OAuth Configuration
@@ -98,7 +147,7 @@ sequenceDiagram
 #### App Registration Details
 ```javascript
 const SPOTIFY_CONFIG = {
-  CLIENT_ID: 'a2c77a000e8e42d9ab4a9afa188df733',
+  CLIENT_ID: 'client-id',
   RESPONSE_TYPE: 'token',
   REDIRECT_URIS: [
     'http://localhost/callback',
@@ -121,7 +170,7 @@ const SPOTIFY_CONFIG = {
 ```javascript
 function buildAuthUrl() {
   const params = new URLSearchParams({
-    client_id: CLIENT_ID,
+    client_id: S_CLIENT_ID,
     response_type: 'token',
     redirect_uri: REDIRECT_URI,
     scope: SCOPES.join(' '),
@@ -569,13 +618,13 @@ php -S localhost:80
 ```javascript
 const CONFIG = {
   development: {
-    CLIENT_ID: 'a2c77a000e8e42d9ab4a9afa188df733',
+    S_CLIENT_ID: '',
     REDIRECT_URI: 'http://localhost/callback',
     API_BASE_URL: 'https://api.spotify.com/v1',
     DEBUG: true
   },
   production: {
-    CLIENT_ID: 'a2c77a000e8e42d9ab4a9afa188df733',
+    S_CLIENT_ID: '',
     REDIRECT_URI: 'https://yourdomain.com/callback',
     API_BASE_URL: 'https://api.spotify.com/v1',
     DEBUG: false
