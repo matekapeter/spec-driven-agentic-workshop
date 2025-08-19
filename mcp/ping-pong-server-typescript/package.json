@@ -1,0 +1,35 @@
+{
+  "name": "mcp-ping-pong-ts",
+  "version": "1.0.0",
+  "main": "build/index.js",
+  "type": "module",
+  "bin": {
+    "ping-pong": "./build/index.js"
+  },
+  "scripts": {
+    "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\""
+  },
+  "files": [
+    "build"
+  ],
+  "keywords": [
+    "mcp",
+    "modelcontextprotocol",
+    "ping",
+    "ping-pong"
+  ],
+  "author": "",
+  "license": "MIT",
+  "description": "A minimal MCP server that implements a ping-pong tool over stdio.",
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.4.0",
+    "zod": "^3.23.8"
+  }
+}
+
+
+

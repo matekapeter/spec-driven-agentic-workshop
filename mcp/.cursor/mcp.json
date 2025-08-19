@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "ping-pong": {
+      "command": "node",
+      "args": [
+        "/Volumes/MacHome/matt/Dev/personal/ws-mcp/ping-pong-server-typescript/build/index.js"
+      ],
+      "env": {}
+    }
+  }
+}
+
+
+
